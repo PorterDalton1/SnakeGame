@@ -1,27 +1,49 @@
+"""
+This program is just a block style of snake. It was made for fun using the tkinter
+class.
+
+Porter Dalton
+12/29/2019
+"""
 from tkinter import *
 from functools import partial
+from PIL import Image
 
 
 class mainWindow:
+    """This is where the snake game is set up and starts playing"""
+
     def __init__(self, master):
+        """Initializer where the game is set up and drawn"""
         self.master = master
-        h = 700
-        w = 1000
-        padC = 3
+        h = 700 #Height of the gameboard
+        w = 1000 #Width of the gameboard
+        padC = 3 #bigger the number, smaller the squares
         self.x = 0
         self.y = 0
-        self.direction = "right"
-        self.snakeLength = 5
+        self.direction = "right" #Establishes the first direction the sake faces
+        self.snakeLength = 5 #How long the initial snake is
+        self.should_continue = True #If this is false the loop ends and so does the game
 
+        #Initial canvas where everthing is drawn
         self.c = Canvas(self.master, bg = "black", height = h, width = w)
         self.grid = {}
         self.snakeItems = []
+        #
         for x in range(0, w, 50):
             for y in range(0, h, 50):
                 self.grid[(x / 50,y / 50)] = self.c.create_rectangle(x+padC,y+padC,x+50-padC,y+50-padC, fill = "black")
 
+        #Image settings
+        img = Image.open("white-star-md.png")
+        img = img.resize((10, 10), Image.ANTIALIAS)
+        self.bug = PhotoImage(file = "white-star-md.png")
+        self.bug = self.bug.subsample(15, 15)
+        self.c.create_image(2,2, image = self.bug, anchor = NE)
+
         self.c.pack()
 
+        #Possible keyboard inputs
         self.moveFrame = Frame(master, width=0, height = 0)
         self.moveFrame.bind("<Down>", partial(self.changeDirection, "down"))
         self.moveFrame.bind("<Up>", partial(self.changeDirection, "up"))
@@ -31,14 +53,20 @@ class mainWindow:
         self.moveFrame.pack()
         self.moveFrame.focus_set()
 
+        #Snake is given a place to start
         self.c.itemconfigure(self.grid[(0, 0)], fill = "white")
         self.snakeItems.insert(0,(0,0))
 
+        #Start
         self.startCycles()
 
-        gridArray = {}
+        self.addBug()
     
     def oneCycle(self, direct):
+        """Checks to see if the direction has changed or if the snake has hit anything
+        Also adds one space to the snake"""
+
+        #Clean this up later-------------------
         if (direct == "down" and self.direction != "up"):
             try:
                 self.grid[(self.x, self.y+1)]
@@ -47,6 +75,7 @@ class mainWindow:
             else:
                 self.c.itemconfigure(self.grid[(self.x,self.y + 1)], fill = "white")
                 self.y += 1
+        #--------------------------------------
 
         if (direct == "up"):
             try:
@@ -74,18 +103,26 @@ class mainWindow:
             else:
                 self.c.itemconfigure(self.grid[(self.x + 1,self.y)], fill = "white")
                 self.x += 1
-
-        self.snakeItems.insert(0, (self.x, self.y))
+                
+        if ((self.x, self.y) in self.snakeItems): #If snake hit itself
+            self.endGame()
+        else:
+            self.snakeItems.insert(0, (self.x, self.y))
 
         if (self.snakeLength == len(self.snakeItems)-1):
             self.c.itemconfigure(self.grid[self.snakeItems.pop()], fill = "black")
 
 
     def startCycles(self):
-        self.oneCycle(self.direction)
-        self.stop = self.master.after(200, self.startCycles)
+        """Starts the loop for the game"""
+        if (self.should_continue):
+            self.oneCycle(self.direction)
+            self.stop = self.master.after(200, self.startCycles)
+
 
     def changeDirection(self, dyrec, m = 1):
+        """takes a direction and makes sure the direction isn't a 180"""
+        #All these if statements are to make sure the snake doesn't make a 180
         if ((dyrec == "right" and self.direction != "left") or
             (dyrec == "left" and self.direction != "right") or
             (dyrec == "up" and self.direction != "down") or
@@ -94,19 +131,30 @@ class mainWindow:
             self.direction = dyrec
     
     def addLength(self, event):
+        """If spacebar is hit add 1 length to the snake"""
+        #Will add if bug is eaten add length in the future
+
         if (event.char == " "):
             self.snakeLength += 1
 
+    def addBug(self):
+        """Yet to really be implemeted, but will eventually be used to place a bug o the canvas"""
+        self.c.create_image(10,10, image = self.bug, anchor = NW)
+
     def endGame(self):
+        """Ends the game, stops the loop and makes the head of the snake turn red"""
+        self.should_continue = False
         self.master.after_cancel(self.stop)
         self.c.itemconfigure(self.grid[self.snakeItems[0]], fill = "red")
 
+    
+
 def main():
+    """main function, just creates a tkinter window and puts it in the snake game"""
     root = Tk()
     mainWindow(root)
 
     root.mainloop()
-
 
 if __name__ == "__main__":
     main()
