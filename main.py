@@ -8,9 +8,10 @@ Porter Dalton
 from tkinter import *
 from functools import partial
 from PIL import Image
+from random import choice
 
 
-class mainWindow:
+class Snake:
     """This is where the snake game is set up and starts playing"""
 
     def __init__(self, master):
@@ -19,6 +20,7 @@ class mainWindow:
         h = 700 #Height of the gameboard
         w = 1000 #Width of the gameboard
         padC = 3 #bigger the number, smaller the squares
+        bugPadC = 17
         self.x = 0
         self.y = 0
         self.direction = "right" #Establishes the first direction the sake faces
@@ -28,19 +30,13 @@ class mainWindow:
         #Initial canvas where everthing is drawn
         self.c = Canvas(self.master, bg = "black", height = h, width = w)
         self.grid = {}
+        self.bugs = {}
         self.snakeItems = []
         #
         for x in range(0, w, 50):
             for y in range(0, h, 50):
-                self.grid[(x / 50,y / 50)] = self.c.create_rectangle(x+padC,y+padC,x+50-padC,y+50-padC, fill = "black")
-
-        #Image settings
-        img = Image.open("white-star-md.png")
-        img = img.resize((10, 10), Image.ANTIALIAS)
-        self.bug = PhotoImage(file = "white-star-md.png")
-        self.bug = self.bug.subsample(15, 15)
-        self.c.create_image(2,2, image = self.bug, anchor = NE)
-
+                self.bugs[(x // 50,y // 50)] = (x+bugPadC,y+bugPadC,x+50-bugPadC,y+50-bugPadC)
+                self.grid[(x // 50,y // 50)] = self.c.create_rectangle(x+padC,y+padC,x+50-padC,y+50-padC, fill = "black")
         self.c.pack()
 
         #Possible keyboard inputs
@@ -56,18 +52,19 @@ class mainWindow:
         #Snake is given a place to start
         self.c.itemconfigure(self.grid[(0, 0)], fill = "white")
         self.snakeItems.insert(0,(0,0))
+        
+        #Add the first bug
+        self.addBug()
 
         #Start
         self.startCycles()
 
-        self.addBug()
     
     def oneCycle(self, direct):
         """Checks to see if the direction has changed or if the snake has hit anything
         Also adds one space to the snake"""
 
-        #Clean this up later-------------------
-        if (direct == "down" and self.direction != "up"):
+        if (direct == "down"):
             try:
                 self.grid[(self.x, self.y+1)]
             except KeyError:
@@ -75,7 +72,6 @@ class mainWindow:
             else:
                 self.c.itemconfigure(self.grid[(self.x,self.y + 1)], fill = "white")
                 self.y += 1
-        #--------------------------------------
 
         if (direct == "up"):
             try:
@@ -104,10 +100,12 @@ class mainWindow:
                 self.c.itemconfigure(self.grid[(self.x + 1,self.y)], fill = "white")
                 self.x += 1
                 
-        if ((self.x, self.y) in self.snakeItems): #If snake hit itself
+        if ((self.x, self.y) in self.snakeItems): #If snake hits itself
             self.endGame()
         else:
             self.snakeItems.insert(0, (self.x, self.y))
+            if (self.bugLoc == (self.x, self.y)):
+                self.eatBug()
 
         if (self.snakeLength == len(self.snakeItems)-1):
             self.c.itemconfigure(self.grid[self.snakeItems.pop()], fill = "black")
@@ -117,7 +115,7 @@ class mainWindow:
         """Starts the loop for the game"""
         if (self.should_continue):
             self.oneCycle(self.direction)
-            self.stop = self.master.after(200, self.startCycles)
+            self.stop = self.master.after(150, self.startCycles)
 
 
     def changeDirection(self, dyrec, m = 1):
@@ -130,16 +128,26 @@ class mainWindow:
 
             self.direction = dyrec
     
-    def addLength(self, event):
-        """If spacebar is hit add 1 length to the snake"""
-        #Will add if bug is eaten add length in the future
-
-        if (event.char == " "):
-            self.snakeLength += 1
+    def addLength(self):
+        """Add 1 length to the snake"""
+        self.snakeLength += 1
 
     def addBug(self):
         """Yet to really be implemeted, but will eventually be used to place a bug o the canvas"""
-        self.c.create_image(10,10, image = self.bug, anchor = NW)
+        while(True):
+            self.bugLoc = choice(list(self.bugs.keys())) #Location of the bug
+            if not self.bugLoc in self.snakeItems:
+                a = self.bugs[(self.bugLoc)][0]
+                b = self.bugs[(self.bugLoc)][1]
+                c = self.bugs[(self.bugLoc)][2]
+                d = self.bugs[(self.bugLoc)][3]
+                self.newBug = self.c.create_rectangle(a, b, c, d, fill = "green")
+                break
+
+    def eatBug(self):
+        self.c.delete(self.newBug)
+        self.addLength()
+        self.addBug()
 
     def endGame(self):
         """Ends the game, stops the loop and makes the head of the snake turn red"""
@@ -152,7 +160,7 @@ class mainWindow:
 def main():
     """main function, just creates a tkinter window and puts it in the snake game"""
     root = Tk()
-    mainWindow(root)
+    Snake(root)
 
     root.mainloop()
 
