@@ -7,8 +7,8 @@ Porter Dalton
 """
 from tkinter import *
 from functools import partial
-from PIL import Image
 from random import choice
+import pygame
 
 
 class Snake:
@@ -16,16 +16,20 @@ class Snake:
 
     def __init__(self, master):
         """Initializer where the game is set up and drawn"""
+        pygame.mixer.pre_init(44100, -16, 1, 512)
+        pygame.init()
+        pygame.mixer.init()
         self.master = master
         h = 700 #Height of the gameboard
         w = 1000 #Width of the gameboard
-        padC = 3 #bigger the number, smaller the squares
+        padC = 5 #bigger the number, smaller the squares
         bugPadC = 17
         self.x = 0
         self.y = 0
         self.direction = "right" #Establishes the first direction the sake faces
-        self.snakeLength = 5 #How long the initial snake is
+        self.snakeLength = 7 #How long the initial snake is
         self.should_continue = True #If this is false the loop ends and so does the game
+        self.speed = 75
 
         #Initial canvas where everthing is drawn
         self.c = Canvas(self.master, bg = "black", height = h, width = w)
@@ -115,7 +119,7 @@ class Snake:
         """Starts the loop for the game"""
         if (self.should_continue):
             self.oneCycle(self.direction)
-            self.stop = self.master.after(150, self.startCycles)
+            self.stop = self.master.after(75, self.startCycles)
 
 
     def changeDirection(self, dyrec, m = 1):
@@ -145,7 +149,11 @@ class Snake:
                 break
 
     def eatBug(self):
+        file = "Eat_Bug.mp3"
+        pygame.mixer.music.load(file)
+        pygame.mixer.music.play(0)
         self.c.delete(self.newBug)
+        self.speed = self.speed // 2
         self.addLength()
         self.addBug()
 
