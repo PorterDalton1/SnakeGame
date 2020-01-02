@@ -24,7 +24,7 @@ class Snake:
         self.x = 0
         self.y = 0
         self.direction = "right" #Establishes the first direction the sake faces
-        self.snakeLength = 5 #How long the initial snake is
+        self.snakeLength = 9 #How long the initial snake is
         self.should_continue = True #If this is false the loop ends and so does the game
 
         #Initial canvas where everthing is drawn
