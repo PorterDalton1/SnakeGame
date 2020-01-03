@@ -119,7 +119,7 @@ class Snake:
         """Starts the loop for the game"""
         if (self.should_continue):
             self.oneCycle(self.direction)
-            self.stop = self.master.after(75, self.startCycles)
+            self.stop = self.master.after(125, self.startCycles)
 
 
     def changeDirection(self, dyrec, m = 1):
