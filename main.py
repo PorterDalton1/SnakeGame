@@ -14,27 +14,28 @@ from random import choice
 class Snake:
     """This is where the snake game is set up and starts playing"""
 
-    def __init__(self, master):
+    def __init__(self, master, *args):
         """Initializer where the game is set up and drawn"""
         self.master = master
-        h = 700 #Height of the gameboard
-        w = 1000 #Width of the gameboard
+        h = args[0] #Height of the gameboard args[0]
+        w = args[1] #Width of the gameboard args[1]
         padC = 3 #bigger the number, smaller the squares
         bugPadC = 17
         self.x = 0
         self.y = 0
         self.direction = "right" #Establishes the first direction the sake faces
-        self.snakeLength = 9 #How long the initial snake is
+        self.snakeLength = args[2] #How long the initial snake is
         self.should_continue = True #If this is false the loop ends and so does the game
 
         #Initial canvas where everthing is drawn
-        self.c = Canvas(self.master, bg = "black", height = h, width = w)
+        self.c = Canvas(self.master, bg = "black", height = h * 50, width = w * 50)
         self.grid = {}
         self.bugs = {}
         self.snakeItems = []
-        #
-        for x in range(0, w, 50):
-            for y in range(0, h, 50):
+
+        #Create all the shapes for the snake and the potential coordinates for the bugs
+        for x in range(0, w * 50, 50):
+            for y in range(0, h * 50, 50):
                 self.bugs[(x // 50,y // 50)] = (x+bugPadC,y+bugPadC,x+50-bugPadC,y+50-bugPadC)
                 self.grid[(x // 50,y // 50)] = self.c.create_rectangle(x+padC,y+padC,x+50-padC,y+50-padC, fill = "black")
         self.c.pack()
@@ -115,7 +116,7 @@ class Snake:
         """Starts the loop for the game"""
         if (self.should_continue):
             self.oneCycle(self.direction)
-            self.stop = self.master.after(150, self.startCycles)
+            self.stop = self.master.after(30, self.startCycles)
 
 
     def changeDirection(self, dyrec, m = 1):
@@ -133,7 +134,7 @@ class Snake:
         self.snakeLength += 1
 
     def addBug(self):
-        """Yet to really be implemeted, but will eventually be used to place a bug o the canvas"""
+        """Adds a single bug somewhere randomly on the board as long as it isn't on the snake"""
         while(True):
             self.bugLoc = choice(list(self.bugs.keys())) #Location of the bug
             if not self.bugLoc in self.snakeItems:
@@ -160,8 +161,8 @@ class Snake:
 def main():
     """main function, just creates a tkinter window and puts it in the snake game"""
     root = Tk()
-    Snake(root)
-
+    #           H   W   SnakeLength
+    Snake(root, 14, 20, 7)
     root.mainloop()
 
 if __name__ == "__main__":
