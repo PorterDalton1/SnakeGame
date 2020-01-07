@@ -1,11 +1,14 @@
 from tkinter import *
 from tkinter import ttk
 from PIL import ImageTk, Image
-from main import Snake
+from SnakeGame import Snake
 
 class OptionsScreen:
     def __init__(self, master):
         self.master = master
+
+    def upLength(self):
+        pass
 
 
 class MenuScreen:
@@ -31,26 +34,36 @@ class MenuScreen:
 
     def startGame(self):
         snakeGame = Tk()
-        Snake(snakeGame)
+        Snake(snakeGame, 12, 7, 4)
         snakeGame.mainloop()
     def options(self):
+
+        def upLength():
+            self.length += 1
+            lengthNumber_Label["text"] = str(self.length)
+        def downLength():
+            self.length -= 1
+            lengthNumber_Label["text"] = str(self.length)
+
         self.length = 7
         options = Tk()
-        length_Label = Label(options, text = "Length of Snake")
-        lengthNumber_Label = Label(options, text = str(self.length))
-        length_Button1 = Button(options, text = "<-")
-        length_Button2 = Button(options, text = "->")
+        length_Label = Label(options, text = "Initial Size of the Snake")
+        lengthNumber_Label = Label(options, text = str(self.length), bg = "white")
+        length_Button1 = Button(options, text = "-", command = downLength)
+        length_Button2 = Button(options, text = "+", command = upLength)
 
         length_Label.grid(row = 0, column = 0)
-        lengthNumber_Label.grid(row = 0, column = 0, rowspan = 2)
+        lengthNumber_Label.grid(row = 0, column = 0, rowspan = 2, sticky = "S")
         length_Button1.grid(row = 1, column = 1)
         length_Button2.grid(row = 1, column = 2)
+
+        dimensions_Canvas = Canvas(options, )
+
+
         options.mainloop()
         
         
         
-        
-
 def main():
     root = Tk()
     MenuScreen(root)
